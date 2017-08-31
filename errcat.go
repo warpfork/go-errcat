@@ -87,15 +87,15 @@ type Error interface {
 var _ Error = &err{}
 
 type err struct {
-	category interface{}
-	msg      string
-	details  map[string]string
+	Category_ interface{}       `json:"category"          refmt:"category"`
+	Message_  string            `json:"message"           refmt:"message"`
+	Details_  map[string]string `json:"details,omitempty" refmt:"category,omitempty"`
 }
 
-func (e *err) Category() interface{}      { return e.category }
-func (e *err) Message() string            { return e.msg }
-func (e *err) Details() map[string]string { return e.details }
-func (e *err) Error() string              { return e.msg }
+func (e *err) Category() interface{}      { return e.Category_ }
+func (e *err) Message() string            { return e.Message_ }
+func (e *err) Details() map[string]string { return e.Details_ }
+func (e *err) Error() string              { return e.Message_ }
 
 //
 // Factories
