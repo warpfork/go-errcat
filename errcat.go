@@ -84,26 +84,50 @@ type Error interface {
 //       ...
 //
 
-var _ Error = &err{}
+var _ Error = &errStruct{}
 
-type err struct {
+type errStruct struct {
 	Category_ interface{}       `json:"category"          refmt:"category"`
 	Message_  string            `json:"message"           refmt:"message"`
 	Details_  map[string]string `json:"details,omitempty" refmt:"category,omitempty"`
 }
 
-func (e *err) Category() interface{}      { return e.Category_ }
-func (e *err) Message() string            { return e.Message_ }
-func (e *err) Details() map[string]string { return e.Details_ }
-func (e *err) Error() string              { return e.Message_ }
+func (e *errStruct) Category() interface{}      { return e.Category_ }
+func (e *errStruct) Message() string            { return e.Message_ }
+func (e *errStruct) Details() map[string]string { return e.Details_ }
+func (e *errStruct) Error() string              { return e.Message_ }
 
 //
 // Factories
 //    ...
 //
 
+/*
+	Return a new error with the given category, and a message composed of
+	`fmt.Sprintf`'ing the remaining arguments.
+*/
 func Errorf(category interface{}, format string, args ...interface{}) error {
-	return &err{category, fmt.Sprintf(format, args...), nil}
+	return &errStruct{category, fmt.Sprintf(format, args...), nil}
+}
+
+/*
+	Return a new error with the same message and details of the given error
+	and a category assigned to the new value.
+*/
+func Recategorize(err error, category interface{}) error {
+	switch e2 := err.(type) {
+	case Error:
+		return &errStruct{category, e2.Message(), e2.Details()}
+	default:
+		return &errStruct{category, e2.Error(), nil}
+	}
+}
+
+/*
+	Return a new error with the given category, message, and details map.
+*/
+func ErrorDetailed(category interface{}, msg string, details map[string]string) error {
+	return &errStruct{category, msg, details}
 }
 
 //
