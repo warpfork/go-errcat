@@ -50,9 +50,98 @@
 			panic("bug: unknown error category")
 		}
 
+	Use the public functions of this package to create errors,
+	and accessor functions (like 'errcat.Category' for example) to access
+	the properties.
+	All your code should use the stdlib `error` interface and these package functions.
+	Using the interfaces rather than a concrete type means you (or others)
+	can easily vendor this library even under different import paths,
+	and all of your error types will interact correctly.
+	Prefering the `error` type to the `errcat.Error` interface avoids common
+	developer irritants that may otherwise arrise from type specificity
+	when putting both types into a variable named "err";
+	all of the errcat package funcs both take and return `error` interfaces
+	for this reason.
+
 	Functions internal to packages may chose to panic up their errors.
 	It is idiomatic to recover such internal panics and return the error
 	as normal at the top of the package even when using panics as a
 	non-local return system internally.
 */
 package errcat
+
+import "fmt"
+
+type Error interface {
+	Category() interface{}      // The category value.  Must be serializable as a string.  Any programatic error handling should switch on this field (exclusively!).
+	Message() string            // A human-readable message to print.
+	Details() map[string]string // A map of optional "details".
+	error                       // Errcat error interfaces are also always stdlib errors.  The `Error() string` method typically aliases `Message() string`.
+}
+
+//
+// The concrete type
+//       ...
+//
+
+var _ Error = &err{}
+
+type err struct {
+	category interface{}
+	msg      string
+	details  map[string]string
+}
+
+func (e *err) Category() interface{}      { return e.category }
+func (e *err) Message() string            { return e.msg }
+func (e *err) Details() map[string]string { return e.details }
+func (e *err) Error() string              { return e.msg }
+
+//
+// Factories
+//    ...
+//
+
+func Errorf(category interface{}, format string, args ...interface{}) error {
+	return &err{category, fmt.Sprintf(format, args...), nil}
+}
+
+//
+// Accessors
+//    ...
+//
+
+/*
+	Return the value of `err.(errcat.Error).Category()` if that typecast works,
+	or the sentinel value `errcat.unknown` if the typecast fails,
+	or nil if the error is nil.
+
+	This is useful for switching on the category of an error, even when
+	functions declare that they return the broader `error` interface,
+	like so:
+
+		result, err := somepkg.SomeFunc()
+		switch errcat.Category(err) {
+		case nil:
+			// good!  pass!
+		case somepkg.ErrAlreadyDone:
+			// good!  pass!
+		case somepkg.ErrDataCorruption:
+			// ... handle ...
+		default:
+			panic("bug: unknown error category")
+		}
+*/
+func Category(err error) interface{} {
+	if err == nil {
+		return nil
+	}
+	e, ok := err.(Error)
+	if !ok {
+		return (unknown)(nil)
+	}
+	return e.Category()
+}
+
+// sentinel type
+type unknown interface{}
