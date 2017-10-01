@@ -114,7 +114,7 @@ func Errorf(category interface{}, format string, args ...interface{}) error {
 	Return a new error with the same message and details of the given error
 	and a category assigned to the new value.
 */
-func Recategorize(err error, category interface{}) error {
+func Recategorize(category interface{}, err error) error {
 	switch e2 := err.(type) {
 	case Error:
 		return &errStruct{category, e2.Message(), e2.Details()}
