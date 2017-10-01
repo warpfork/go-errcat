@@ -113,9 +113,13 @@ func Errorf(category interface{}, format string, args ...interface{}) error {
 /*
 	Return a new error with the same message and details of the given error
 	and a category assigned to the new value.
+
+	If the given error is nil, nil will be returned.
 */
 func Recategorize(category interface{}, err error) error {
 	switch e2 := err.(type) {
+	case nil:
+		return nil
 	case Error:
 		return &errStruct{category, e2.Message(), e2.Details()}
 	default:
