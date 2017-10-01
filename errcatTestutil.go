@@ -3,7 +3,7 @@ package errcat
 import "fmt"
 
 /*
-	ShouldErrorWithCategory is a helper function for GoConvey-style testing:
+	ErrorShouldHaveCategory is a helper function for GoConvey-style testing:
 	it takes an "actual" value (which should be an error), and a description
 	of what errcat "Category" it should have, and returns
 	either an empty string if the error matches the category,
@@ -16,7 +16,7 @@ import "fmt"
 	have to add any dependencies in order to provide these helpers.
 	Ignore this function if you don't use GoConvey.)
 */
-func ShouldErrorWithCategory(actual interface{}, expectedClause ...interface{}) string {
+func ErrorShouldHaveCategory(actual interface{}, expectedClause ...interface{}) string {
 	if len(expectedClause) != 1 {
 		return "Misuse: ShouldErrorWithCategory predicate needs exactly one item in the \"expected\" clause"
 	}
