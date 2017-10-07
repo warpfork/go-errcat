@@ -191,10 +191,12 @@ func Category(err error) interface{} {
 	}
 	e, ok := err.(Error)
 	if !ok {
-		return (unknown)(nil)
+		return unknown
 	}
 	return e.Category()
 }
 
-// sentinel type
-type unknown interface{}
+// our internal error categories.  callers should never have a need to reference them.
+type errorCategory string
+
+const unknown = errorCategory("unknown-category") // sentinel value for Category() to return on non-errcat errors.

@@ -2,6 +2,7 @@ package errcat_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"."
@@ -27,6 +28,16 @@ func TestErrorf(t *testing.T) {
 		}
 		if errcat.Category(err) != ErrAsdf {
 			t.Errorf("must equal")
+		}
+	})
+}
+
+func TestCategory(t *testing.T) {
+	t.Run("uncategorized errors do not match as nil", func(t *testing.T) {
+		switch errcat.Category(fmt.Errorf("womp womp")) {
+		case nil:
+			t.Errorf("must not nil")
+		default: // pass
 		}
 	})
 }
