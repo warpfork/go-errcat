@@ -64,6 +64,17 @@ func TestDeferredAssertion(t *testing.T) {
 		shouldCategory(t, err, errcat.ErrCategoryFilterRejection)
 		t.Logf("rejection for wild errors:\n\t%s\n", err)
 	})
+	t.Run("shadowing the func error is not a problem", func(t *testing.T) {
+		err := func() (err error) {
+			defer errcat.RequireErrorHasCategory(&err, ErrorCategoryA(""))
+			if true {
+				err := fmt.Errorf("sad panda")
+				return err
+			}
+			return nil
+		}()
+		shouldCategory(t, err, errcat.ErrCategoryFilterRejection)
+	})
 }
 
 func shouldCategory(t *testing.T, err error, cat interface{}) {
