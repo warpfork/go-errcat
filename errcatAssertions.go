@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
 /*
@@ -48,9 +49,9 @@ func RequireErrorHasCategoryOrPanic(e *error, category interface{}) {
 	}
 }
 
-func requireErrorHasCategory(e error, category interface{}) error {
-	ecat := Category(e)
-	switch ecat {
+func requireErrorHasCategory(e error, wantCat interface{}) error {
+	eCat := Category(e)
+	switch eCat {
 	case nil:
 		return nil
 	case ErrCategoryFilterRejection:
@@ -60,20 +61,23 @@ func requireErrorHasCategory(e error, category interface{}) error {
 	case unknown:
 		fallthrough
 	default:
-		rt_category := reflect.TypeOf(category)
-		rt_ecat := reflect.TypeOf(ecat)
-		if rt_ecat == rt_category {
+		rt_wantCat := reflect.TypeOf(wantCat)
+		rt_eCat := reflect.TypeOf(eCat)
+		if rt_eCat == rt_wantCat {
 			return nil
 		}
 		_, file, line, ok := runtime.Caller(2)
 		if !ok {
 			file, line = "?", 0
+		} else {
+			ss := strings.Split(file, "/")
+			file = ss[len(ss)-1]
 		}
 		return ErrorDetailed(
 			ErrCategoryFilterRejection,
 			fmt.Sprintf("%s at %s:%d -- required %s, got %s(%q) (original error: %s)",
 				ErrCategoryFilterRejection, file, line,
-				rt_category.Name(), rt_ecat.Name(), ecat, e),
+				rt_wantCat.String(), rt_eCat.String(), eCat, e),
 			Details(e),
 		)
 	}
