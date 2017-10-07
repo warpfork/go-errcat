@@ -49,7 +49,7 @@ func TestSerialization(t *testing.T) {
 		type deserErr struct {
 			Category_ ErrorCategory     `json:"category"          refmt:"category"`
 			Message_  string            `json:"message"           refmt:"message"`
-			Details_  map[string]string `json:"details,omitempty" refmt:"category,omitempty"`
+			Details_  map[string]string `json:"details,omitempty" refmt:"details,omitempty"`
 		}
 		var e2 deserErr
 		err := json.Unmarshal(bytes, &e2)
