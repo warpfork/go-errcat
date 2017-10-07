@@ -30,37 +30,52 @@ import (
 	This method mutates the error pointer you give it, so the error simple continues
 	to return; it does not disrupt your control flow.
 	You may also want to panic, though, since surely (surely; that's what you're
-	declaring, if you use this feature) you are encountering a major bug.
+	declaring, if you use this feature) you are encountering a major bug: for this,
+	use the `RequireErrorHasCategoryOrPanic` function.
 */
 func RequireErrorHasCategory(e *error, category interface{}) {
-	ecat := Category(*e)
+	if err := requireErrorHasCategory(*e, category); err != nil {
+		*e = err
+	}
+}
+
+/*
+	Identical to `RequireErrorHasCategory`, but panics.
+*/
+func RequireErrorHasCategoryOrPanic(e *error, category interface{}) {
+	if err := requireErrorHasCategory(*e, category); err != nil {
+		panic(err)
+	}
+}
+
+func requireErrorHasCategory(e error, category interface{}) error {
+	ecat := Category(e)
 	switch ecat {
 	case nil:
-		return
+		return nil
 	case ErrCategoryFilterRejection:
 		// do nothing, because it's already redflagged.
 		// (hm, or should we attach another line number?)
-		return
+		return e
 	case unknown:
 		fallthrough
 	default:
 		rt_category := reflect.TypeOf(category)
 		rt_ecat := reflect.TypeOf(ecat)
 		if rt_ecat == rt_category {
-			return
+			return nil
 		}
-		_, file, line, ok := runtime.Caller(1)
+		_, file, line, ok := runtime.Caller(2)
 		if !ok {
 			file, line = "?", 0
 		}
-		err := ErrorDetailed(
+		return ErrorDetailed(
 			ErrCategoryFilterRejection,
 			fmt.Sprintf("%s at %s:%d -- required %s, got %s(%q) (original error: %s)",
 				ErrCategoryFilterRejection, file, line,
-				rt_category.Name(), rt_ecat.Name(), ecat, *e),
-			Details(*e),
+				rt_category.Name(), rt_ecat.Name(), ecat, e),
+			Details(e),
 		)
-		*e = err
 	}
 }
 
