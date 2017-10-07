@@ -134,6 +134,31 @@ func ErrorDetailed(category interface{}, msg string, details map[string]string) 
 	return &errStruct{category, msg, details}
 }
 
+/*
+	Return a new error with the same category and message, and the given k-v pair
+	of details appended.
+
+	Nil errors will be passed through.
+	Non-errcat errors are also passed through; the details will be lost (caveat
+	emptor; do not use this method if you haven't already normalized your errors
+	into errcat form).
+*/
+func AppendDetail(err error, key string, value string) error {
+	switch e2 := err.(type) {
+	case nil:
+		return nil
+	case Error:
+		d2 := make(map[string]string, len(e2.Details()))
+		for k, v := range e2.Details() {
+			d2[k] = v
+		}
+		d2[key] = value
+		return &errStruct{e2.Category(), e2.Message(), d2}
+	default:
+		return err
+	}
+}
+
 //
 // Accessors
 //    ...
