@@ -196,6 +196,22 @@ func Category(err error) interface{} {
 	return e.Category()
 }
 
+/*
+	Return the value of `err.(errcat.Error).Details()` if that typecast works,
+	or nil if the typecast fails,
+	or nil if the error is nil.
+*/
+func Details(err error) map[string]string {
+	if err == nil {
+		return nil
+	}
+	e, ok := err.(Error)
+	if !ok {
+		return nil
+	}
+	return e.Details()
+}
+
 // our internal error categories.  callers should never have a need to reference them.
 type errorCategory string
 
