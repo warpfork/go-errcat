@@ -70,7 +70,12 @@
 */
 package errcat
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+	"text/template"
+)
 
 type Error interface {
 	Category() interface{}      // The category value.  Must be serializable as a string.  Any programatic error handling should switch on this field (exclusively!).
@@ -154,6 +159,45 @@ func AppendDetail(err error, key string, value string) error {
 		}
 		d2[key] = value
 		return &errStruct{e2.Category(), e2.Message(), d2}
+	default:
+		return err
+	}
+}
+
+func PrefixAnnotate(err error, msg string, details [][2]string) error {
+	switch e2 := err.(type) {
+	case nil:
+		return nil
+	case Error:
+		t := template.New("").Funcs(template.FuncMap{
+			"join":  strings.Join,
+			"quote": func(x interface{}) string { return fmt.Sprintf("%q", x) },
+		})
+		t, err := t.Parse(msg)
+		var buf bytes.Buffer
+		if err != nil {
+			buf.WriteString(fmt.Sprintf("[[%s]]", err))
+		}
+		if t != nil {
+			data := make(map[string]string, len(details))
+			for _, v := range details {
+				data[v[0]] = v[1]
+			}
+			err = t.Execute(&buf, data)
+			if err != nil {
+				buf.WriteString(fmt.Sprintf("[[%s]]", err))
+			}
+		}
+
+		d2 := make(map[string]string, len(e2.Details()))
+		for k, v := range e2.Details() {
+			d2[k] = v
+		}
+		for _, v := range details {
+			d2[v[0]] = v[1]
+		}
+
+		return &errStruct{e2.Category(), buf.String() + ": " + e2.Message(), d2}
 	default:
 		return err
 	}
