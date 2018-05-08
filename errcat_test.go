@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"."
+	"github.com/polydawn/go-errcat"
 )
 
 type ErrorCategory string
