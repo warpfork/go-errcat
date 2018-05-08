@@ -36,7 +36,7 @@ func ErrorShouldHaveCategory(actual interface{}, expectedClause ...interface{}) 
 		return fmt.Sprintf("Actual: %v\nExpected category: %q\nShould have an errcat error!  Was type %T.", actual, expected, actual)
 	}
 	if e2.Category() != expected {
-		return fmt.Sprintf("Actual category: %q\nExpected category: %q\n(Full error: %v)", e2.Category, expected, actual)
+		return fmt.Sprintf("Actual category: %q\nExpected category: %q\n(Full error: %v)", e2.Category(), expected, actual)
 	}
 	return "" // couldn't find grounds to reject it; must be good!
 }
