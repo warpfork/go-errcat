@@ -28,7 +28,7 @@ import (
 	compile time, which is normal in other languages.  Alas.  Nonetheless, here's
 	our attempt to do the best we can, even if it's merely at runtime.)
 
-	This method mutates the error pointer you give it, so the error simple continues
+	This method mutates the error pointer you give it, so the error simply continues
 	to return; it does not disrupt your control flow.
 	You may also want to panic, though, since surely (surely; that's what you're
 	declaring, if you use this feature) you are encountering a major bug: for this,
