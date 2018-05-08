@@ -33,6 +33,10 @@
 
 		{"category":"your_tag", "msg":"full text goes here"}
 
+	If details are present, they're an additional map[string]string:
+
+		{"category":"your_tag", "msg":"full text", "details":{"foo":"bar"}}
+
 	Typical usage patterns involve a const block in each package which
 	enumerates the set of error category values that this package may return.
 	When calling functions using the errcat convention, the callers may
